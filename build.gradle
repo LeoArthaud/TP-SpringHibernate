@@ -1,0 +1,36 @@
+plugins {
+    id 'war' // to package the application
+    id 'org.gretty' version '3.0.1' // to test and deploy the application in an embedded Tomcat
+}
+
+sourceCompatibility = 1.8 // build in Java 8
+targetCompatibility = 1.8 // run in Java 8
+
+def springframeworkVersion = '5.2.3.RELEASE' // the common Spring version to use for all modules
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+
+    // Uncomment the following lines to add Spring core, context and ORM modules to the project
+    //implementation "org.springframework:spring-core:${springframeworkVersion}"
+    //implementation "org.springframework:spring-context:${springframeworkVersion}"
+    //implementation "org.springframework:spring-orm:${springframeworkVersion}"
+
+    // Uncomment the following line to add Hibernate to the project
+    //implementation 'org.hibernate:hibernate-core:5.4.10.Final'
+
+    // An in-memory h2 database to test the application without the need for a real database
+    implementation group: 'com.h2database', name: 'h2', version: '1.3.148'
+    // The driver to connect to a real MySQL database
+    //implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.18'
+
+    // The servlet API for Java EE integration
+    // The JSTL library for JSP is loaded directly from the webapp/WEB-INF/lib/ folder
+    providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
+
+    // Junit framework for unit testing the application
+    testImplementation 'junit:junit:4.12'
+}
