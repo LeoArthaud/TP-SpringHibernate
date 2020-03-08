@@ -1,15 +1,24 @@
 package org.epsi.b3.simplewebapp.products;
 
+import javax.persistence.Basic;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Objects;
 import java.util.zip.DataFormatException;
 
 /**
  * An entity to model the view of a product.
  */
+@Entity
+@Table(name="Product")
 public class Product {
 
+    @Id
     private String code;
+    @Basic
     private String name;
+    @Basic
     private Float price;
 
     public Product() {

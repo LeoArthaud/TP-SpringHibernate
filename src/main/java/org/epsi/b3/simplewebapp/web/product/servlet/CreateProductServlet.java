@@ -5,6 +5,10 @@ import org.epsi.b3.simplewebapp.db.utils.DBUtils;
 import org.epsi.b3.simplewebapp.products.Product;
 import org.epsi.b3.simplewebapp.web.product.ProductUtils;
 import org.epsi.b3.simplewebapp.web.product.entity.ProductViewBean;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import persistence.SessionSingleton;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -44,59 +48,81 @@ public class CreateProductServlet extends HttpServlet {
 
     // The method called after the user "Submit" the creation of the product.
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        SessionFactory session = SessionSingleton.getSession();
 
-        final ProductViewBean viewBean = new ProductViewBean(
-                request.getParameter("code"),
-                request.getParameter("name"),
-                request.getParameter("price")
+        Session currentSession =  session.getCurrentSession();
 
-        );
-        Product product = null;
-        String errorString = null;
-
+        final Transaction transaction =
+                currentSession.beginTransaction();
         try {
-            product = ProductUtils.parseFromView(viewBean);
-            product.validate();
-        } catch (NumberFormatException e) {
-            if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, "Invalid price : " + viewBean.getPrice(), e);
-            }
-            errorString = "Invalid price";
-        } catch (DataFormatException e) {
-            if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, "Invalid product code : " + viewBean.getCode(), e);
-            }
-            errorString = "Product Code invalid!";
+            Product myProduct = new Product();
+            myProduct.setCode(request.getParameter("code"));
+            myProduct.setName(request.getParameter("name"));
+            myProduct.setPrice(Float.parseFloat(request.getParameter("price")));
+            currentSession.save(myProduct);
+            transaction.commit();
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.WARNING, "pas bon", e);
+            transaction.rollback();
         }
 
-        if (errorString == null) {
-            try {
-                try (Connection conn = ConnectionUtils.tryAndGetConnection()) {
-                        DBUtils.insertProduct(conn, product);
-                        conn.commit();
-                }
-            } catch (SQLException e) {
-                errorString = e.getMessage();
-                LOGGER.log(Level.WARNING, "Unable to insert the product " + viewBean, e);
-            }
-        }
+        currentSession.close();
 
-        // Save the informations in the request attribute before sending them to the views.
-        request.setAttribute("errorString", errorString);
-        request.setAttribute("product", viewBean);
- 
-        // If errors found, forward them to the 'edit' page.
-        if (errorString != null) {
-            RequestDispatcher dispatcher = request.getServletContext()
-                    .getRequestDispatcher("/WEB-INF/views/createProductView.jsp");
-            dispatcher.forward(request, response);
-        }
-        // No problem occured - redirect to the list of products
-        else {
-            response.sendRedirect(request.getContextPath() + "/productList");
-        }
+        response.sendRedirect(request.getContextPath() + "/productList");
+//            throws ServletException, IOException {
+//
+//        final ProductViewBean viewBean = new ProductViewBean(
+//                request.getParameter("code"),
+//                request.getParameter("name"),
+//                request.getParameter("price")
+//
+//        );
+//        Product product = null;
+//        String errorString = null;
+//
+//        try {
+//            product = ProductUtils.parseFromView(viewBean);
+//            product.validate();
+//        } catch (NumberFormatException e) {
+//            if (LOGGER.isLoggable(Level.INFO)) {
+//                LOGGER.log(Level.INFO, "Invalid price : " + viewBean.getPrice(), e);
+//            }
+//            errorString = "Invalid price";
+//        } catch (DataFormatException e) {
+//            if (LOGGER.isLoggable(Level.INFO)) {
+//                LOGGER.log(Level.INFO, "Invalid product code : " + viewBean.getCode(), e);
+//            }
+//            errorString = "Product Code invalid!";
+//        }
+//
+//        if (errorString == null) {
+//            try {
+//                try (Connection conn = ConnectionUtils.tryAndGetConnection()) {
+//                        DBUtils.insertProduct(conn, product);
+//                        conn.commit();
+//                }
+//            } catch (SQLException e) {
+//                errorString = e.getMessage();
+//                LOGGER.log(Level.WARNING, "Unable to insert the product " + viewBean, e);
+//            }
+//        }
+//
+//        // Save the informations in the request attribute before sending them to the views.
+//        request.setAttribute("errorString", errorString);
+//        request.setAttribute("product", viewBean);
+//
+//        // If errors found, forward them to the 'edit' page.
+//        if (errorString != null) {
+//            RequestDispatcher dispatcher = request.getServletContext()
+//                    .getRequestDispatcher("/WEB-INF/views/createProductView.jsp");
+//            dispatcher.forward(request, response);
+//        }
+//        // No problem occured - redirect to the list of products
+//        else {
+//            response.sendRedirect(request.getContextPath() + "/productList");
+//        }
     }
+
  
 }

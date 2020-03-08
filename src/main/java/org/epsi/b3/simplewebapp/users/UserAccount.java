@@ -2,15 +2,25 @@ package org.epsi.b3.simplewebapp.users;
 
 import java.util.Objects;
 import java.util.zip.DataFormatException;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Basic;
+import javax.persistence.Table;
 
 /**
  * A business object the represents a User account.
  */
+@Entity
+@Table(name="User")
 public class UserAccount {
 
+    @Id
     private Integer idUser;
+    @Basic(optional = false)
     private String userName;
+    @Basic(optional = false)
     private Gender gender;
+    @Basic
     private String password;
 
     public UserAccount() {
